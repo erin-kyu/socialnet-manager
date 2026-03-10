@@ -165,15 +165,31 @@ async function selectProfile(profileId) {
 
     if (profileError) throw profileError
 
-    // Fetch friends, joining to profiles to get each friend's name.
-    // The join alias "profiles!friends_friend_id_fkey" uses the FK name
-    // that Supabase generates from the column and referenced table names.
-    const { data: friends, error: friendsError } = await db
+    // Fetch all friendship rows where this profile appears on either side
+    const { data: friendRows, error: friendsError } = await db
       .from('friends')
       .select('profile_id, friend_id')
       .or(`profile_id.eq.${profileId},friend_id.eq.${profileId}`)
 
     if (friendsError) throw friendsError
+
+    // Extract the "other" UUID from each row (the one that isn't this profile)
+    const friendIds = friendRows.map(row =>
+      row.profile_id === profileId ? row.friend_id : row.profile_id
+    )
+
+    // Resolve those UUIDs to names with a second query
+    let friends = []
+    if (friendIds.length > 0) {
+      const { data: friendProfiles, error: nameError } = await db
+        .from('profiles')
+        .select('id, name')
+        .in('id', friendIds)
+        .order('name', { ascending: true })
+
+      if (nameError) throw nameError
+      friends = friendProfiles  // each item now has { id, name }
+    }
 
     displayProfile(profile, friends)
 
