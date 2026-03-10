@@ -22,42 +22,33 @@
 
   <!-- ===== APPLICATION TITLE HEADER ===== -->
   <header id="app-header">
-    <h1 id="app-title">LBYCPG3 SocialNet App - Profile Manager</h1>
+    <h1 id="app-title">LBYCPG3 SocialNet - Profile Manager</h1>
   </header>
 
-  <!-- Main content: three equal panels -->
+  <!-- Main content: three panels -->
   <div id="app-wrapper">
     <main class="container-fluid flex-grow-1 py-3">
       <div class="row g-3 h-100">
 
         <!-- ===== LEFT PANEL: Profile Management ===== -->
-        <div class="col-12 col-md-4">
+        <div class="col-12 col-md-3">
           <div class="sn-panel">
-            <h6 class="fw-bold text-primary border-bottom pb-2 mb-3">Profile Management</h6>
+            <h6 class="sn-panel-heading">Profile Management</h6>
 
-            <!-- Add Profile -->
-            <label for="input-name" class="form-label fw-semibold small">Name</label>
-            <div class="input-group mb-2">
-              <input type="text" id="input-name" class="form-control form-control-sm"
-                     placeholder="Enter full name">
-              <button id="btn-add" class="btn btn-primary btn-sm">Add</button>
+            <!-- Add / Lookup Profile (shared input) -->
+            <label for="input-name" class="form-label fw-semibold small">Add/Lookup Profile:</label>
+            <input type="text" id="input-name" class="form-control form-control-sm mb-2"
+                   placeholder="Enter profile name">
+
+            <!-- Three action buttons in a row -->
+            <div class="d-flex gap-2 mb-3">
+              <button id="btn-add" class="btn btn-primary btn-sm flex-fill">Add</button>
+              <button id="btn-lookup" class="btn btn-primary btn-sm flex-fill">Lookup</button>
+              <button id="btn-delete" class="btn btn-danger btn-sm flex-fill">Delete</button>
             </div>
-
-            <!-- Look Up Profile -->
-            <label for="input-lookup" class="form-label fw-semibold small">Look Up</label>
-            <div class="input-group mb-2">
-              <input type="text" id="input-lookup" class="form-control form-control-sm"
-                     placeholder="Enter profile name">
-              <button id="btn-lookup" class="btn btn-secondary btn-sm">Search</button>
-            </div>
-
-            <!-- Delete Profile -->
-            <button id="btn-delete" class="btn btn-danger btn-sm w-100 mb-3">
-              Delete Selected Profile
-            </button>
 
             <!-- Profile List -->
-            <p class="small fw-semibold text-muted mb-1">Profiles</p>
+            <p class="small fw-semibold text-muted mb-1">All Profiles:</p>
             <div id="profile-list" class="profile-list-box">
               <!-- Populated dynamically by JavaScript -->
             </div>
@@ -65,27 +56,29 @@
         </div>
 
         <!-- ===== CENTER PANEL: Profile Information ===== -->
-        <div class="col-12 col-md-4">
-          <div class="sn-panel text-center">
-            <h6 class="fw-bold text-primary border-bottom pb-2 mb-3">Profile Information</h6>
+        <div class="col-12 col-md-5">
+          <div class="sn-panel">
+            <h6 class="sn-panel-heading">Profile Information</h6>
 
-            <!-- Profile picture -->
-            <img id="profile-pic"
-                 src="resources/default.png"
-                 alt="Profile picture"
-                 class="profile-thumb" />
-
-            <!-- Name -->
-            <h4 id="profile-name" class="profile-hero-name">No Profile Selected</h4>
+            <!-- Profile picture + name side by side -->
+            <div class="profile-header mb-3">
+              <img id="profile-pic"
+                   src="resources/images/default.png"
+                   alt="Profile picture"
+                   class="profile-thumb" />
+              <h4 id="profile-name" class="profile-hero-name">No Profile Selected</h4>
+            </div>
 
             <!-- Current Status -->
+            <p class="small fw-semibold text-muted mb-1">Current Status:</p>
             <div id="profile-status" class="sn-textbox mb-3">&mdash;</div>
 
-            <!-- Favorite quote -->
+            <!-- Favorite Quote -->
+            <p class="small fw-semibold text-muted mb-1">Favorite Quote:</p>
             <div id="profile-quote" class="sn-textbox mb-3">&mdash;</div>
 
             <!-- Friends list -->
-            <p class="small fw-semibold text-start text-muted mb-1">Friends</p>
+            <p class="small fw-semibold text-muted mb-1">Friends:</p>
             <div id="friends-list" class="sn-textbox sn-textbox--tall">
               <!-- Populated dynamically by JavaScript -->
             </div>
@@ -95,40 +88,37 @@
         <!-- ===== RIGHT PANEL: Edit Profile ===== -->
         <div class="col-12 col-md-4">
           <div class="sn-panel">
-            <h6 class="fw-bold text-primary border-bottom pb-2 mb-3">Edit Profile</h6>
+            <h6 class="sn-panel-heading">Edit Profile</h6>
 
             <!-- Change Status -->
-            <label class="form-label fw-semibold small">Change Status</label>
-            <div class="input-group mb-3">
-              <input type="text" id="input-status" class="form-control form-control-sm"
-                     placeholder="New status message">
-              <button id="btn-status" class="btn btn-primary btn-sm">Change</button>
-            </div>
+            <label class="form-label fw-semibold small">Change Status:</label>
+            <input type="text" id="input-status" class="form-control form-control-sm mb-2"
+                   placeholder="Enter new status">
+            <button id="btn-status" class="btn btn-primary btn-sm w-100 mb-3">Update Status</button>
+
+            <!-- Change Favorite Quote -->
+            <label class="form-label fw-semibold small">Change Favorite Quote:</label>
+            <input type="text" id="input-quote" class="form-control form-control-sm mb-2"
+                   placeholder="Enter favorite quote">
+            <button id="btn-quote" class="btn btn-primary btn-sm w-100 mb-3">Update Quote</button>
 
             <!-- Change Picture -->
-            <label class="form-label fw-semibold small">Change Picture</label>
-            <div class="input-group mb-3">
-              <input type="text" id="input-picture" class="form-control form-control-sm"
-                     placeholder="e.g. resources/ada.png">
-              <button id="btn-picture" class="btn btn-primary btn-sm">Update Picture</button>
+            <label class="form-label fw-semibold small">Change Picture:</label>
+            <input type="text" id="input-picture" class="form-control form-control-sm mb-2"
+                   placeholder="Enter image filename">
+            <button id="btn-picture" class="btn btn-success btn-sm w-100 mb-3">Update Picture</button>
+
+            <!-- Manage Friends (shared input) -->
+            <label class="form-label fw-semibold small">Manage Friends:</label>
+            <input type="text" id="input-friend" class="form-control form-control-sm mb-2"
+                   placeholder="Enter friend's name">
+            <div class="d-flex gap-2 mb-3">
+              <button id="btn-add-friend" class="btn btn-success btn-sm flex-fill">Add Friend</button>
+              <button id="btn-remove-friend" class="btn btn-warning btn-sm flex-fill">Remove</button>
             </div>
 
-            <!-- Add Friend -->
-            <label class="form-label fw-semibold small">Add Friend</label>
-            <div class="input-group mb-3">
-              <input type="text" id="input-friend" class="form-control form-control-sm"
-                     placeholder="Friend's full name">
-              <button id="btn-add-friend" class="btn btn-success btn-sm">Add Friend</button>
-            </div>
-
-            <!-- Remove Friend -->
-            <label class="form-label fw-semibold small">Remove Friend</label>
-            <div class="input-group mb-3">
-              <input type="text" id="input-remove-friend" class="form-control form-control-sm"
-                     placeholder="Friend's full name">
-              <button id="btn-remove-friend" class="btn btn-warning btn-sm">Remove</button>
-            </div>
-
+            <!-- Exit -->
+            <button id="btn-exit" class="btn btn-dark btn-sm w-100 mt-auto">Exit</button>
           </div>
         </div>
 
@@ -137,7 +127,7 @@
 
     <!-- STATUS BAR: always at the bottom of the page -->
     <footer id="status-bar">
-      <span id="status-message">Ready. Select a profile from the list.</span>
+      <span id="status-message">Ready. Select a profile from the list or add a new one.</span>
     </footer>
 
   </div><!-- /#app-wrapper -->

@@ -1,67 +1,412 @@
 /* css/style.css */
 
-/* Bootstrap CSS custom property overrides */
+/* ================================================================
+   Design System Variables
+   ================================================================ */
 :root {
+  /* Fonts */
   --font-heading: 'Source Serif 4', Georgia, serif;
   --font-body:    'DM Sans', system-ui, sans-serif;
-  --clr-header-bg:  #1e3a6e;
-  --clr-page-bg:   #dde3ec;
-  --clr-panel-bg:  #f7f8fa;
+
+  /* Colors */
+  --clr-header-bg:    #1e3a6e;
+  --clr-header-text:  #ffffff;
+  --clr-page-bg:      #2c3e6b;
+  --clr-panel-bg:     #eef0f4;
   --clr-panel-border: #c8cdd8;
-  --clr-blue: #2456b4;
+  --clr-blue:         #2a5cba;
+  --clr-green:        #28834a;
+  --clr-orange:       #e09530;
+  --clr-red:          #c0392b;
+  --clr-dark:         #334163;
+  --clr-list-active:  #2a5cba;
+  --clr-status-bg:    #1e3a6e;
+  --clr-status-text:  #d0dced;
+
+  /* Sizing */
+  --header-h:    52px;
+  --statusbar-h: 34px;
+  --radius-lg:   0.55rem;
+  --radius-sm:   0.3rem;
 }
 
-html { scroll-behavior: smooth; }
+/* ================================================================
+   Base & Typography
+   ================================================================ */
+html {
+  scroll-behavior: smooth;
+  height: 100%;
+}
 
-/* Application wrapper: full-height flex column layout */
+body {
+  font-family: var(--font-body);
+  background:  var(--clr-page-bg);
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  color: #333;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+}
+
+/* ================================================================
+   Application Header (centered title, dark navy)
+   ================================================================ */
+#app-header {
+  background:      var(--clr-header-bg);
+  color:           var(--clr-header-text);
+  height:          var(--header-h);
+  display:         flex;
+  align-items:     center;
+  justify-content: center;
+  padding:         0 1.25rem;
+  flex-shrink:     0;
+}
+
+#app-title {
+  font-family:    var(--font-heading);
+  font-size:      1.25rem;
+  font-weight:    700;
+  margin:         0;
+  letter-spacing: 0.02em;
+}
+
+/* ================================================================
+   Application Wrapper
+   ================================================================ */
 #app-wrapper {
   height: calc(100% - var(--header-h));
   display: flex;
   flex-direction: column;
 }
 
-/* Panel card styling */
-.sn-panel {   /* custom panel card */
+#app-wrapper main {
+  flex-grow: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+}
+
+#app-wrapper .row.h-100 {
+  min-height: 100%;
+}
+
+/* ================================================================
+   Panel Card Styling
+   ================================================================ */
+.sn-panel {
   background:     var(--clr-panel-bg);
   border:         1px solid var(--clr-panel-border);
   border-radius:  var(--radius-lg);
   padding:        1rem 1.1rem;
-  flex: 1;  min-height: 0;  overflow: hidden;
+  height:         100%;
+  display:        flex;
+  flex-direction: column;
+  min-height:     0;
+  overflow:       hidden;
 }
 
-/* Profile picture circular display */
-#profile-pic, .profile-thumb {
-  width: 96px;
-  height: 96px;
-  object-fit: cover;
+/* Panel headings: uppercase, dark navy, bold */
+.sn-panel-heading {
+  text-transform:  uppercase;
+  color:           var(--clr-header-bg);
+  font-family:     var(--font-heading);
+  font-weight:     800;
+  font-size:       0.82rem;
+  letter-spacing:  0.06em;
+  border-bottom:   2px solid var(--clr-panel-border);
+  padding-bottom:  0.5rem;
+  margin-bottom:   0.85rem;
 }
 
-/* Profile picture hover effect */
+/* ================================================================
+   Profile Header (Centre Panel) - pic + name side by side
+   ================================================================ */
+.profile-header {
+  display:     flex;
+  align-items: center;
+  gap:         1rem;
+}
+
+/* ================================================================
+   Profile Picture
+   ================================================================ */
+#profile-pic,
+.profile-thumb {
+  width:          96px;
+  height:         96px;
+  object-fit:     cover;
+  border-radius:  50%;
+  border:         3px solid var(--clr-blue);
+  display:        block;
+  background:     #d6dce8;
+  flex-shrink:    0;
+}
+
 #profile-pic:hover {
   transform:  scale(1.05);
   transition: transform 0.2s ease;
 }
 
-/* Friends list item in centre panel */
-#friends-list .friend-entry {
-  padding:   0.4rem 0.75rem;
-  font-size: 0.9rem;
+/* ================================================================
+   Profile Hero Name
+   ================================================================ */
+.profile-hero-name {
+  font-family:   var(--font-heading);
+  font-weight:   700;
+  font-size:     1.3rem;
+  color:         var(--clr-header-bg);
+  margin:        0;
 }
 
-/* Active profile highlight in left panel */
+/* ================================================================
+   Text Display Boxes (Status, Quote, Friends)
+   ================================================================ */
+.sn-textbox {
+  background:    #ffffff;
+  border:        1px solid var(--clr-panel-border);
+  border-radius: var(--radius-sm);
+  padding:       0.5rem 0.75rem;
+  font-size:     0.88rem;
+  color:         #444;
+  text-align:    left;
+  min-height:    2.2rem;
+}
+
+.sn-textbox--tall {
+  flex:       1;
+  min-height: 120px;
+  overflow-y: auto;
+}
+
+/* Section labels */
+.sn-panel .small.fw-semibold {
+  font-size:   0.78rem;
+  font-weight: 600;
+}
+
+/* ================================================================
+   Profile List (Left Panel) - Scrollable
+   ================================================================ */
+.profile-list-box {
+  flex:          1;
+  min-height:    0;
+  overflow-y:    auto;
+  border:        1px solid var(--clr-panel-border);
+  border-radius: var(--radius-sm);
+  background:    #ffffff;
+}
+
+.profile-item {
+  display:       flex;
+  align-items:   center;
+  gap:           0.5rem;
+  padding:       0.45rem 0.65rem;
+  cursor:        pointer;
+  border-bottom: 1px solid #e9ecef;
+  font-size:     0.88rem;
+  transition:    background 0.15s ease, color 0.15s ease;
+}
+
+.profile-item:last-child {
+  border-bottom: none;
+}
+
+.profile-item:hover {
+  background: #dde3ee;
+}
+
 #profile-list .profile-item.active {
-  background: var(--clr-list-active);
+  background:   var(--clr-list-active);
   border-color: var(--clr-blue);
-  color:            #ffffff;
+  color:        #ffffff;
 }
 
-/* Status bar at bottom */
+.list-thumb {
+  width:         32px;
+  height:        32px;
+  object-fit:    cover;
+  border-radius: 50%;
+  border:        2px solid var(--clr-panel-border);
+  flex-shrink:   0;
+}
+
+.profile-item.active .list-thumb {
+  border-color: #ffffff;
+}
+
+/* ================================================================
+   Friends List Items (Centre Panel)
+   ================================================================ */
+#friends-list .friend-entry {
+  padding:       0.4rem 0.75rem;
+  font-size:     0.88rem;
+  border-bottom: 1px solid #eee;
+}
+
+#friends-list .friend-entry:last-child {
+  border-bottom: none;
+}
+
+/* ================================================================
+   Form Inputs
+   ================================================================ */
+.form-control,
+.sn-input {
+  border-radius: var(--radius-sm);
+  font-size:     0.85rem;
+  border-color:  var(--clr-panel-border);
+}
+
+.form-control:focus {
+  border-color: var(--clr-blue);
+  box-shadow:   0 0 0 0.2rem rgba(42, 92, 186, 0.18);
+}
+
+/* ================================================================
+   Buttons - Override Bootstrap to match reference design
+   ================================================================ */
+
+/* Primary blue buttons */
+.btn-primary {
+  background-color: var(--clr-blue) !important;
+  border-color:     var(--clr-blue) !important;
+  color:            #fff !important;
+  font-size:        0.82rem;
+  font-weight:      500;
+}
+.btn-primary:hover {
+  background-color: #1f4a9a !important;
+  border-color:     #1f4a9a !important;
+}
+
+/* Danger button (Delete) */
+.btn-danger {
+  background-color: var(--clr-red) !important;
+  border-color:     var(--clr-red) !important;
+  color:            #fff !important;
+  font-size:        0.82rem;
+  font-weight:      500;
+}
+.btn-danger:hover {
+  background-color: #a5281d !important;
+  border-color:     #a5281d !important;
+}
+
+/* Success button (Add Friend, Update Picture) */
+.btn-success {
+  background-color: var(--clr-green) !important;
+  border-color:     var(--clr-green) !important;
+  color:            #fff !important;
+  font-size:        0.82rem;
+  font-weight:      500;
+}
+.btn-success:hover {
+  background-color: #1f6e3c !important;
+  border-color:     #1f6e3c !important;
+}
+
+/* Warning button (Remove Friend) */
+.btn-warning {
+  background-color: var(--clr-orange) !important;
+  border-color:     var(--clr-orange) !important;
+  color:            #fff !important;
+  font-size:        0.82rem;
+  font-weight:      500;
+}
+.btn-warning:hover {
+  background-color: #c47e22 !important;
+  border-color:     #c47e22 !important;
+}
+
+/* Dark button (Exit) */
+.btn-dark {
+  background-color: var(--clr-dark) !important;
+  border-color:     var(--clr-dark) !important;
+  color:            #fff !important;
+  font-size:        0.82rem;
+  font-weight:      500;
+}
+.btn-dark:hover {
+  background-color: #263250 !important;
+  border-color:     #263250 !important;
+}
+
+/* Custom button variants (fallback for guide markup classes) */
+.sn-btn-blue {
+  background-color: var(--clr-blue);
+  border-color:     var(--clr-blue);
+  color: #fff; font-size: 0.82rem;
+}
+.sn-btn-blue:hover  { background-color: #1f4a9a; border-color: #1f4a9a; color: #fff; }
+
+.sn-btn-green {
+  background-color: var(--clr-green);
+  border-color:     var(--clr-green);
+  color: #fff; font-size: 0.82rem;
+}
+.sn-btn-green:hover { background-color: #1f6e3c; border-color: #1f6e3c; color: #fff; }
+
+.sn-btn-orange {
+  background-color: var(--clr-orange);
+  border-color:     var(--clr-orange);
+  color: #fff; font-size: 0.82rem;
+}
+.sn-btn-orange:hover { background-color: #c47e22; border-color: #c47e22; color: #fff; }
+
+/* ================================================================
+   Status Bar (Footer) - Dark navy with light text
+   ================================================================ */
 #status-bar {
-  background: var(--clr-status-bg);
-  height: var(--statusbar-h);
-  font-size: 0.82rem;
-  font-style: italic;
+  background:  var(--clr-status-bg);
+  color:       var(--clr-status-text);
+  height:      var(--statusbar-h);
+  font-size:   0.8rem;
+  font-style:  italic;
   display:     flex;
   align-items: center;
   padding:     0.5rem 1rem;
+  flex-shrink: 0;
+  border-top:  1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ================================================================
+   Responsive: Mobile Adjustments
+   ================================================================ */
+@media (max-width: 767.98px) {
+  body {
+    overflow-y: auto;
+  }
+
+  #app-wrapper {
+    height: auto;
+  }
+
+  .sn-panel {
+    height: auto;
+    margin-bottom: 0;
+  }
+
+  .profile-list-box {
+    max-height: 200px;
+  }
+
+  .sn-textbox--tall {
+    max-height: 150px;
+  }
+
+  #app-title {
+    font-size: 1rem;
+  }
+
+  .profile-header {
+    flex-direction: column;
+    text-align: center;
+  }
 }
