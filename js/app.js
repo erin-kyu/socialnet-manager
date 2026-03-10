@@ -90,8 +90,8 @@ function renderFriendsList(friends) {
   friends.forEach(f => {
     const div = document.createElement('div')
     div.className   = 'friend-entry'
-    div.textContent = f.name  // f.name directly from bidirectional query  // joined via friend_id -> profiles.name
-    box.appendChild(div)
+    div.textContent = f.name  // f.name directly from bidirectional query
+    list.appendChild(div)  // FIX: was "box.appendChild(div)" — box doesn't exist
   })
 }
 
@@ -124,10 +124,16 @@ async function loadProfileList() {
 
     data.forEach(profile => {
       const row = document.createElement('div')
-      row.className   = 'profile-item'
+      row.className    = 'profile-item'
+      row.dataset.id   = profile.id
+
+      // FIX: create a span element for the name text
+      const span = document.createElement('span')
       span.textContent = profile.name
-      row.dataset.id  = profile.id
-      btn.addEventListener('click', () => selectProfile(profile.id))
+      row.appendChild(span)
+
+      // FIX: attach click listener to row (was "btn" which doesn't exist)
+      row.addEventListener('click', () => selectProfile(profile.id))
       container.appendChild(row)
     })
 
@@ -164,8 +170,8 @@ async function selectProfile(profileId) {
     // that Supabase generates from the column and referenced table names.
     const { data: friends, error: friendsError } = await db
       .from('friends')
-      .select('profile_id, friend_id')       .or(`profile_id.eq.${profileId},friend_id.eq.${profileId}`)
-
+      .select('profile_id, friend_id')
+      .or(`profile_id.eq.${profileId},friend_id.eq.${profileId}`)
 
     if (friendsError) throw friendsError
 
@@ -322,6 +328,40 @@ async function changeStatus() {
 
   } catch (err) {
     setStatus(`Error updating status: ${err.message}`, true)
+  }
+}
+
+/**
+ * changeQuote()
+ * Updates the quote column for the current profile in Supabase
+ * and immediately reflects the change in the centre panel.
+ * FIX: This function was missing from the guide but is referenced
+ * in the event listeners section.
+ */
+async function changeQuote() {
+  if (!currentProfileId) {
+    setStatus('Error: No profile is selected.', true)
+    return
+  }
+  const newQuote = document.getElementById('input-quote').value.trim()
+  if (!newQuote) {
+    setStatus('Error: Quote field is empty.', true)
+    return
+  }
+  try {
+    const { error } = await db
+      .from('profiles')
+      .update({ quote: newQuote })
+      .eq('id', currentProfileId)
+
+    if (error) throw error
+
+    document.getElementById('profile-quote').textContent = newQuote
+    document.getElementById('input-quote').value = ''
+    setStatus('Quote updated.')
+
+  } catch (err) {
+    setStatus(`Error updating quote: ${err.message}`, true)
   }
 }
 
@@ -513,10 +553,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Pressing Enter in the name field triggers Add Profile
   document.getElementById('input-name')
     .addEventListener('keydown', e => { if (e.key === 'Enter') addProfile() })
-
-  // Pressing Enter in the lookup field triggers Look Up
-  document.getElementById('input-name')
-    .addEventListener('keydown', e => { if (e.key === 'Enter') lookUpProfile() })
 
   // Pressing Enter in the status field triggers Change Status
   document.getElementById('input-status')
