@@ -41,7 +41,7 @@ function setStatus(message, isError = false) {
  * Resets the centre panel to its default empty state.
  */
 function clearCentrePanel() {
-    document.getElementById('profile-pic').src = 'resources/images/default.png'
+    document.getElementById('profile-pic').src = 'resources/default.png'
     document.getElementById('profile-name').textContent = 'No Profile Selected'
     document.getElementById('profile-status').textContent = '—'
     document.getElementById('profile-quote').textContent = '—'
@@ -55,9 +55,9 @@ function clearCentrePanel() {
  */
 function displayProfile(profile, friends = []) {
     document.getElementById('profile-pic').src =
-        profile.picture || 'resources/images/default.png'
+        profile.picture || 'resources/default.png'
     document.getElementById('profile-pic').onerror = function () {
-        this.src = 'resources/images/default.png'
+        this.src = 'resources/default.png'
     }
     document.getElementById('profile-name').textContent = profile.name
     document.getElementById('profile-status').textContent =
@@ -123,9 +123,9 @@ async function loadProfileList() {
             // Thumbnail
             const img = document.createElement('img')
             img.className = 'list-thumb'
-            img.src = profile.picture || 'resources/images/default.png'
+            img.src = profile.picture || 'resources/default.png'
             img.alt = profile.name
-            img.onerror = function () { this.src = 'resources/images/default.png' }
+            img.onerror = function () { this.src = 'resources/default.png' }
 
             // Name
             const span = document.createElement('span')
