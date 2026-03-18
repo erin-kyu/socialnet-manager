@@ -8,7 +8,7 @@ const { createClient } = supabase
 
 // *** REPLACE THESE WITH YOUR OWN SUPABASE CREDENTIALS ***
 const SUPABASE_URL = 'https://akhetrwyxpupgdsgykyi.supabase.co'
-const SUPABASE_PUBLISHABLE_KEY = ' sb_publishable_tmx3m7vYVgPNCtQv1YFZyQ_9amD-dNp'
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_tmx3m7vYVgPNCtQv1YFZyQ_9amD-dNp'
 
 const db = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY)
 
