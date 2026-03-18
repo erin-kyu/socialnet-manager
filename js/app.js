@@ -13,8 +13,14 @@ const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_tmx3m7vYVgPNCtQv1YFZyQ_9amD-dNp
 const db = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY)
 
 // ================================================================
-// Section 2: Application State
+// Section 2: Application Constants and State
 // ================================================================
+
+// DEFAULT_AVATAR is shown whenever a profile has no picture stored
+// in Supabase, or when an image fails to load.
+// *** REPLACE THIS WITH YOUR OWN VERCEL BLOB DEFAULT AVATAR URL ***
+const DEFAULT_AVATAR = 'https://hjybfixkvzrdybnu.public.blob.vercel-storage.com/avatars/default.png'
+
 // currentProfileId holds the UUID of the profile currently shown
 // in the centre panel. It is null when no profile is selected.
 let currentProfileId = null
@@ -41,7 +47,7 @@ function setStatus(message, isError = false) {
  * Resets the centre panel to its default empty state.
  */
 function clearCentrePanel() {
-    document.getElementById('profile-pic').src = 'resources/default.png'
+    document.getElementById('profile-pic').src = DEFAULT_AVATAR
     document.getElementById('profile-name').textContent = 'No Profile Selected'
     document.getElementById('profile-status').textContent = '—'
     document.getElementById('profile-quote').textContent = '—'
@@ -55,9 +61,9 @@ function clearCentrePanel() {
  */
 function displayProfile(profile, friends = []) {
     document.getElementById('profile-pic').src =
-        profile.picture || 'resources/default.png'
+        profile.picture || DEFAULT_AVATAR
     document.getElementById('profile-pic').onerror = function () {
-        this.src = 'resources/default.png'
+        this.src = DEFAULT_AVATAR
     }
     document.getElementById('profile-name').textContent = profile.name
     document.getElementById('profile-status').textContent =
@@ -86,6 +92,21 @@ function renderFriendsList(friends) {
         div.textContent = f.name
         list.appendChild(div)
     })
+}
+
+/**
+ * showUploadProgress / hideUploadProgress
+ * Shows/hides the animated progress bar during image upload.
+ */
+function showUploadProgress(label = 'Uploading...') {
+    const wrapper = document.getElementById('upload-progress')
+    const text = document.getElementById('upload-progress-label')
+    text.textContent = label
+    wrapper.hidden = false
+}
+
+function hideUploadProgress() {
+    document.getElementById('upload-progress').hidden = true
 }
 
 // ================================================================
@@ -123,9 +144,9 @@ async function loadProfileList() {
             // Thumbnail
             const img = document.createElement('img')
             img.className = 'list-thumb'
-            img.src = profile.picture || 'resources/default.png'
+            img.src = profile.picture || DEFAULT_AVATAR
             img.alt = profile.name
-            img.onerror = function () { this.src = 'resources/default.png' }
+            img.onerror = function () { this.src = DEFAULT_AVATAR }
 
             // Name
             const span = document.createElement('span')
@@ -378,9 +399,15 @@ async function changeQuote() {
     }
 }
 
+// ================================================================
+// Section 5: Picture Update — Vercel Blob Upload
+// ================================================================
+
 /**
  * changePicture()
- * Updates the picture column with a new relative path.
+ * Supports two modes:
+ *   Mode A — File upload (priority): uploads via /api/upload-avatar
+ *   Mode B — URL input (fallback): saves URL directly to Supabase
  */
 async function changePicture() {
     if (!currentProfileId) {
@@ -388,33 +415,156 @@ async function changePicture() {
         return
     }
 
-    const newPicture = document.getElementById('input-picture').value.trim()
+    const fileInput = document.getElementById('input-picture-file')
+    const urlInput = document.getElementById('input-picture-url')
+    const file = fileInput.files[0]
+    const urlValue = urlInput.value.trim()
 
-    if (!newPicture) {
-        setStatus('Error: Picture field is empty.', true)
+    // Mode A: File upload
+    if (file) {
+        await uploadFileToBlob(file)
         return
     }
 
+    // Mode B: Direct URL
+    if (urlValue) {
+        await saveUrlDirectly(urlValue)
+        return
+    }
+
+    setStatus('Error: Select a file or enter a URL before clicking Update Picture.', true)
+}
+
+/**
+ * uploadFileToBlob(file)
+ * Sends the selected File to /api/upload-avatar, receives the
+ * compressed Vercel Blob URL, and saves it to Supabase.
+ */
+async function uploadFileToBlob(file) {
+    if (!file.type.startsWith('image/')) {
+        setStatus('Error: The selected file is not an image.', true)
+        return
+    }
+
+    showUploadProgress('Compressing and uploading...')
+    setStatus('Uploading image to Vercel Blob...')
+
     try {
-        const { error } = await db
-            .from('profiles')
-            .update({ picture: newPicture })
-            .eq('id', currentProfileId)
+        const formData = new FormData()
+        formData.append('file', file)
 
-        if (error) throw error
+        const response = await fetch('/api/upload-avatar', {
+            method: 'POST',
+            body: formData,
+            // Do NOT set Content-Type manually — browser sets it with boundary
+        })
 
-        document.getElementById('profile-pic').src = newPicture
-        document.getElementById('input-picture').value = ''
-        await loadProfileList()
-        setStatus('Picture updated.')
+        // Safe response parsing: read text first, then try JSON
+        const rawText = await response.text()
 
+        console.log(
+            `[upload-avatar] HTTP ${response.status} ${response.statusText}`,
+            response.ok ? '(success)' : '(error)',
+            '\nRaw body:',
+            rawText.slice(0, 500)
+        )
+
+        let result
+        try {
+            result = JSON.parse(rawText)
+        } catch {
+            const preview = rawText.slice(0, 200).replace(/\s+/g, ' ').trim()
+            const hint = diagnoseUploadStatus(response.status)
+            throw new Error(
+                'Server returned HTTP ' + response.status +
+                ' (not JSON). ' + hint +
+                ' | Response: "' + preview + '"'
+            )
+        }
+
+        if (!response.ok) {
+            throw new Error(result.error || 'Server error ' + response.status + '.')
+        }
+
+        const blobUrl = result.url
+        await savePictureUrl(blobUrl)
+
+        document.getElementById('input-picture-file').value = ''
     } catch (err) {
-        setStatus(`Error updating picture: ${err.message}`, true)
+        setStatus('Error uploading image: ' + err.message, true)
+    } finally {
+        hideUploadProgress()
     }
 }
 
+/**
+ * diagnoseUploadStatus(status)
+ * Returns a hint for common HTTP errors from /api/upload-avatar.
+ */
+function diagnoseUploadStatus(status) {
+    switch (status) {
+        case 401:
+        case 403:
+            return 'Check that BLOB_READ_WRITE_TOKEN is set in Vercel Environment Variables.'
+        case 404:
+            return 'api/upload-avatar.js was not found. Verify the file is in the /api folder at the repo root.'
+        case 405:
+            return 'Wrong HTTP method. The function only accepts POST requests.'
+        case 413:
+            return 'File too large. The Vercel function config sizeLimit is 10 MB.'
+        case 500:
+            return 'The serverless function crashed. Check Vercel Dashboard → Functions → Logs.'
+        case 504:
+            return 'The serverless function timed out. Try a smaller file.'
+        default:
+            return 'Check Vercel Dashboard → Functions → Logs for more details.'
+    }
+}
+
+/**
+ * saveUrlDirectly(url)
+ * Validates and saves a pasted URL to Supabase without uploading to Blob.
+ */
+async function saveUrlDirectly(url) {
+    if (!url.startsWith('https://')) {
+        setStatus('Error: URL must start with https://', true)
+        return
+    }
+
+    setStatus('Saving picture URL...')
+
+    try {
+        await savePictureUrl(url)
+    } catch (err) {
+        setStatus(`Error saving URL: ${err.message}`, true)
+    }
+}
+
+/**
+ * savePictureUrl(newPictureUrl)
+ * Shared helper: updates the picture column in Supabase and refreshes the UI.
+ */
+async function savePictureUrl(newPictureUrl) {
+    const { error } = await db
+        .from('profiles')
+        .update({ picture: newPictureUrl })
+        .eq('id', currentProfileId)
+
+    if (error) throw error
+
+    document.getElementById('profile-pic').src = newPictureUrl
+
+    const activeThumb = document.querySelector(
+        '#profile-list .profile-item.active .list-thumb'
+    )
+    if (activeThumb) activeThumb.src = newPictureUrl
+
+    document.getElementById('input-picture-url').value = ''
+    setStatus('Picture updated successfully.')
+}
+
 // ================================================================
-// Section 5: Friends Management
+// Section 6: Friends Management
 // ================================================================
 
 /**
@@ -459,7 +609,6 @@ async function addFriend() {
         }
 
         // Step 3: Normalize UUIDs so smaller one is always profile_id
-        // This ensures the UNIQUE constraint catches duplicates regardless of direction
         const pid = currentProfileId < friendId ? currentProfileId : friendId
         const fid = currentProfileId < friendId ? friendId : currentProfileId
 
@@ -543,7 +692,7 @@ async function removeFriend() {
 }
 
 // ================================================================
-// Section 6: Event Listener Setup
+// Section 7: Event Listener Setup
 // ================================================================
 document.addEventListener('DOMContentLoaded', async () => {
 
@@ -566,6 +715,23 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     document.getElementById('btn-picture')
         .addEventListener('click', changePicture)
+
+    // Live preview: when user picks a file, show local preview immediately
+    document.getElementById('input-picture-file').addEventListener('change', (e) => {
+        const file = e.target.files[0]
+        if (!file) return
+        if (!file.type.startsWith('image/')) return
+
+        const pic = document.getElementById('profile-pic')
+        if (pic.dataset.previewUrl) {
+            URL.revokeObjectURL(pic.dataset.previewUrl)
+        }
+
+        const previewUrl = URL.createObjectURL(file)
+        pic.src = previewUrl
+        pic.dataset.previewUrl = previewUrl
+        setStatus("Preview loaded. Click 'Update Picture' to save to Vercel Blob.")
+    })
 
     document.getElementById('btn-add-friend')
         .addEventListener('click', addFriend)

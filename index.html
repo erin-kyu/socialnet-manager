@@ -110,8 +110,31 @@
 
                         <!-- Change Picture -->
                         <label class="form-label fw-semibold small">Change Picture:</label>
-                        <input type="text" id="input-picture" class="form-control form-control-sm sn-input mb-1"
-                            placeholder="Enter image filename" />
+
+                        <!-- File upload (Mode A — priority) -->
+                        <label for="input-picture-file" class="form-label fw-semibold small mt-1">Upload from device:</label>
+                        <input
+                            type="file"
+                            id="input-picture-file"
+                            class="form-control form-control-sm sn-input mb-2"
+                            accept="image/*"
+                        />
+
+                        <!-- URL input (Mode B — fallback) -->
+                        <label for="input-picture-url" class="form-label fw-semibold small">Or paste an image URL:</label>
+                        <input
+                            type="url"
+                            id="input-picture-url"
+                            class="form-control form-control-sm sn-input mb-1"
+                            placeholder="https://example.com/image.webp"
+                        />
+
+                        <!-- Upload progress bar (hidden by default) -->
+                        <div id="upload-progress" class="upload-progress mb-2" hidden>
+                            <div class="upload-progress-bar"></div>
+                            <span id="upload-progress-label">Uploading...</span>
+                        </div>
+
                         <button id="btn-picture" class="btn sn-btn-blue w-100 mb-3">Update Picture</button>
 
                         <!-- Manage Friends -->
